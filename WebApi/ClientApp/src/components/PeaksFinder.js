@@ -2,8 +2,9 @@ import React, { Component } from "react";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import { actionCreators } from "../store/PeaksInRadius";
+import AwesomeDebouncePromise from "awesome-debounce-promise";
 
-class FetchData extends Component {
+class PeaksFinder extends Component {
   componentWillMount() {
     // This method runs when the component is first added to the page
     const latitude = 49.314246;
@@ -13,53 +14,77 @@ class FetchData extends Component {
     this.props.requestPeaksInRadius(latitude, longitude, radiusKm);
   }
 
-  handleLatitudeChange(event) {
+  requestPeaksInRadiusDebounced = AwesomeDebouncePromise(
+    this.props.requestPeaksInRadius,
+    500
+  );
+
+  requestPeaksNearDebounced = AwesomeDebouncePromise(
+    this.props.requestPeaksNear,
+    500
+  );
+
+  handleLatitudeChange = async event => {
     const { longitude, radiusKm } = this.props;
-    this.props.requestPeaksInRadius(event.target.value, longitude, radiusKm);
-  }
+    await this.requestPeaksInRadiusDebounced(
+      event.target.value,
+      longitude,
+      radiusKm
+    );
+  };
 
-  handleLongitudeChange(event) {
+  handleLongitudeChange = async event => {
     const { latitude, radiusKm } = this.props;
-    this.props.requestPeaksInRadius(latitude, event.target.value, radiusKm);
-  }
+    await this.requestPeaksInRadiusDebounced(
+      latitude,
+      event.target.value,
+      radiusKm
+    );
+  };
 
-  handleRadiusChange(event) {
+  handleRadiusChange = async event => {
     const { latitude, longitude } = this.props;
-    this.props.requestPeaksInRadius(latitude, longitude, event.target.value);
-  }
+    await this.requestPeaksInRadiusDebounced(
+      latitude,
+      longitude,
+      event.target.value
+    );
+  };
 
-  handleLocationChange(event) {
+  handleLocationChange = async event => {
     const { radiusKm } = this.props;
-    this.props.requestPeaksNear(event.target.value, radiusKm);
-  }
+    this.requestPeaksNearDebounced(event.target.value, radiusKm);
+  };
 
   render() {
     const { latitude, longitude, radiusKm, location } = this.props;
     return (
       <div>
-        {/* <input
-          type="text"
-          name="location"
-          value={location}
-          onChange={this.handleLocationChange.bind(this)}
-        /> */}
+        {
+          <input
+            type="text"
+            name="location"
+            placeholder="Where are you?"
+            onChange={this.handleLocationChange}
+          />
+        }
         <input
           type="text"
           name="latitude"
           value={latitude}
-          onChange={this.handleLatitudeChange.bind(this)}
+          onChange={this.handleLatitudeChange}
         />
         <input
           type="text"
           name="longitude"
           value={longitude}
-          onChange={this.handleLongitudeChange.bind(this)}
+          onChange={this.handleLongitudeChange}
         />
         <input
           type="text"
           name="radiusKm"
-          value={radiusKm}
-          onChange={this.handleRadiusChange.bind(this)}
+          placeholder="How far can you drive?"
+          onChange={this.handleRadiusChange}
         />
         <h1>Peaks in radius</h1>
         {renderPeaksTable(this.props)}
@@ -121,4 +146,4 @@ function renderPagination(props) {
 export default connect(
   state => state.peaksInRadius,
   dispatch => bindActionCreators(actionCreators, dispatch)
-)(FetchData);
+)(PeaksFinder);
