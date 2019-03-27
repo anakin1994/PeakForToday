@@ -22,24 +22,41 @@ function createData(peak) {
     name: peak.name,
     elevation: Math.round(peak.elevationMeters),
     distance: Math.round(peak.distanceKm * 100) / 100,
-    hikeDistance: peak.hikeDistanceKm
-      ? Math.round(peak.hikeDistanceKm * 100) / 100
-      : `No data`,
-    elevationGain: peak.elevationGain
-      ? Math.round(peak.elevationGain)
-      : `No data`,
-    time: peak.estimatedTimeHours
-      ? Math.round(peak.estimatedTimeHours * 10) / 10
-      : `No data`
+    hikeDistance:
+      peak.hikeDistanceKm !== null
+        ? Math.round(peak.hikeDistanceKm * 100) / 100
+        : `No data`,
+    elevationGain:
+      peak.elevationGain !== null ? Math.round(peak.elevationGain) : `No data`,
+    time:
+      peak.estimatedTimeHours !== null
+        ? Math.round(peak.estimatedTimeHours * 10) / 10
+        : `No data`,
+    latitude: peak.latitude,
+    longitude: peak.longitude
   };
 }
 
 function desc(a, b, orderBy) {
+  if (a[orderBy] === "No data") return 1;
+  if (b[orderBy] === "No data") return -1;
   if (b[orderBy] < a[orderBy]) {
     return -1;
   }
   if (b[orderBy] > a[orderBy]) {
     return 1;
+  }
+  return 0;
+}
+
+function asc(a, b, orderBy) {
+  if (a[orderBy] === "No data") return 1;
+  if (b[orderBy] === "No data") return -1;
+  if (b[orderBy] < a[orderBy]) {
+    return 1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return -1;
   }
   return 0;
 }
@@ -57,7 +74,7 @@ function stableSort(array, cmp) {
 function getSorting(order, orderBy) {
   return order === "desc"
     ? (a, b) => desc(a, b, orderBy)
-    : (a, b) => -desc(a, b, orderBy);
+    : (a, b) => asc(a, b, orderBy);
 }
 
 const rows = [
@@ -174,14 +191,14 @@ const toolbarStyles = theme => ({
 });
 
 let EnhancedTableToolbar = props => {
-  const { classes } = props;
+  const { classes, location, radiusKm } = props;
 
   return (
     <Toolbar className={classNames(classes.root)}>
       <div className={classes.title}>
         {
           <Typography variant="h6" id="tableTitle">
-            Peaks in radius
+            {`Peaks within ${radiusKm} km from ${location}`}
           </Typography>
         }
       </div>
@@ -191,7 +208,9 @@ let EnhancedTableToolbar = props => {
 };
 
 EnhancedTableToolbar.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
+  location: PropTypes.string.isRequired,
+  radiusKm: PropTypes.number.isRequired
 };
 
 EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
@@ -199,7 +218,8 @@ EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
 const styles = theme => ({
   root: {
     width: "100%",
-    marginTop: theme.spacing.unit * 3
+    marginTop: theme.spacing.unit * 3,
+    marginBottom: theme.spacing.unit * 3
   },
   table: {
     minWidth: 1020
@@ -228,12 +248,12 @@ class EnhancedTable extends React.Component {
   };
 
   render() {
-    const { classes } = this.props;
+    const { classes, location, radiusKm } = this.props;
     const { data, order, orderBy } = this.state;
 
     return (
       <Paper className={classes.root}>
-        <EnhancedTableToolbar />
+        <EnhancedTableToolbar location={location} radiusKm={radiusKm} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -246,7 +266,15 @@ class EnhancedTable extends React.Component {
               {stableSort(data, getSorting(order, orderBy)).map(n => {
                 return (
                   <TableRow hover tabIndex={-1} key={n.id}>
-                    <TableCell component="th" scope="row">
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      component="a"
+                      target="_blank"
+                      href={`https://www.google.com/maps/@?api=1&map_action=map&center=${
+                        n.latitude
+                      },${n.longitude}&basemap=terrain`}
+                    >
                       {n.name}
                     </TableCell>
                     <TableCell align="right">{n.elevation}</TableCell>
@@ -266,7 +294,9 @@ class EnhancedTable extends React.Component {
 }
 
 EnhancedTable.propTypes = {
-  peaks: PropTypes.arrayOf(PropTypes.object),
+  peaks: PropTypes.arrayOf(PropTypes.object).isRequired,
+  location: PropTypes.string.isRequired,
+  radiusKm: PropTypes.number.isRequired,
   classes: PropTypes.object.isRequired
 };
 

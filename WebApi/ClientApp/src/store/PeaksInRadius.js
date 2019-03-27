@@ -4,6 +4,8 @@ const receivePeaksInRadiusType = "RECEIVE_PEAKS_IN_RADIUS";
 const requestPeaksNearType = "REQUEST_PEAKS_NEAR";
 const receivePeaksNearType = "RECEIVE_PEAKS_NEAR";
 
+const responseErrorType = "RESPONSE_ERROR";
+
 const initialState = { peaks: [], isLoading: false };
 
 export const actionCreators = {
@@ -20,13 +22,19 @@ export const actionCreators = {
 
     const url = `api/Peaks/PeaksInRadius?latitude=${latitude}&longitude=${longitude}&radiusKm=${radiusKm}`;
     const response = await fetch(url);
-    const peaksResponse = await response.json();
-
-    dispatch({
-      type: receivePeaksInRadiusType,
-      radiusKm,
-      peaksResponse
-    });
+    if (response.ok) {
+      const peaksResponse = await response.json();
+      dispatch({
+        type: receivePeaksInRadiusType,
+        radiusKm,
+        peaksResponse
+      });
+    } else {
+      dispatch({
+        type: responseErrorType,
+        radiusKm
+      });
+    }
   },
 
   requestPeaksNear: (location, radiusKm) => async (dispatch, getState) => {
@@ -34,14 +42,21 @@ export const actionCreators = {
 
     const url = `api/Peaks/PeaksNear?location=${location}&radiusKm=${radiusKm}`;
     const response = await fetch(url);
-    const peaksResponse = await response.json();
-
-    dispatch({
-      type: receivePeaksNearType,
-      location,
-      radiusKm,
-      peaksResponse
-    });
+    if (response.ok) {
+      const peaksResponse = await response.json();
+      dispatch({
+        type: receivePeaksNearType,
+        location,
+        radiusKm,
+        peaksResponse
+      });
+    } else {
+      dispatch({
+        type: responseErrorType,
+        location,
+        radiusKm
+      });
+    }
   }
 };
 
@@ -60,7 +75,8 @@ export const reducer = (state, action) => {
       latitude: action.latitude,
       longitude: action.longitude,
       radiusKm: action.radiusKm,
-      isLoading: true
+      isLoading: true,
+      isError: false
     };
   }
 
@@ -92,7 +108,18 @@ export const reducer = (state, action) => {
       longitude: action.peaksResponse.longitude,
       radiusKm: action.radiusKm,
       peaks: action.peaksResponse.peaks.sort(peaksByDistance),
-      isLoading: false
+      isLoading: false,
+      isError: false
+    };
+  }
+
+  if (action.type === responseErrorType) {
+    return {
+      ...state,
+      location: action.location,
+      radiusKm: action.radiusKm,
+      isLoading: false,
+      isError: true
     };
   }
 

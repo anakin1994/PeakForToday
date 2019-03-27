@@ -7,33 +7,56 @@ import PeaksTable from "./PeaksTable";
 import { withStyles } from "@material-ui/core";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Typography from "@material-ui/core/Typography";
-import Input from "@material-ui/core/Input";
-import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import TextField from "@material-ui/core/TextField";
 
 const styles = theme => ({
+  page: {
+    backgroundImage: "url(background.jpg)",
+    backgroundAttachment: "fixed",
+    position: "fixed",
+    width: "100%",
+    height: "100%",
+    zIndex: -1
+  },
   root: {
-    display: "flex"
+    display: "flex",
+    width: "auto",
+    marginLeft: theme.spacing.unit * 3,
+    marginRight: theme.spacing.unit * 3,
+    [theme.breakpoints.up(1100 + theme.spacing.unit * 3 * 2)]: {
+      width: 1100,
+      marginLeft: "auto",
+      marginRight: "auto"
+    }
   },
   content: {
     flexGrow: 1,
-    padding: theme.spacing.unit * 3,
+    padding: theme.spacing.unit * 4,
     height: "100vh",
-    overflow: "auto"
-  },
-  appBarSpacer: theme.mixins.toolbar,
-  tableContainer: {
-    height: 320
+    opacity: 0.95,
+    color: theme.palette.common.white
   },
   container: {
     display: "flex",
-    flexWrap: "wrap"
+    flexWrap: "wrap",
+    padding: theme.spacing.unit * 2,
+    backgroundColor: "rgba(255,255,255,.99)",
+    borderRadius: 16
   },
   input: {
     margin: theme.spacing.unit
   },
   formControl: {
     margin: theme.spacing.unit
+  },
+  progress: {
+    padding: theme.spacing.unit * 8,
+    marginLeft: "36%"
+  },
+  errorMessage: {
+    paddingTop: theme.spacing.unit * 2
   }
 });
 
@@ -71,43 +94,82 @@ class PeaksFinder extends Component {
   };
 
   render() {
-    const { classes, isLoading } = this.props;
+    const {
+      classes,
+      isLoading,
+      peaks,
+      location,
+      radiusKm,
+      isError
+    } = this.props;
     return (
-      <div className={classes.root}>
-        <CssBaseline />
-        <main className={classes.content}>
-          <div className={classes.appBarSpacer} />
-          <Typography variant="h4" gutterBottom component="h2">
-            Find a peak for today
-          </Typography>
-          <div className={classes.container}>
-            <FormControl className={classes.formControl}>
-              <InputLabel>Location</InputLabel>
-              <Input
-                placeholder="Where are you?"
-                inputProps={{
-                  "aria-label": "Location"
-                }}
-                onChange={this.handleLocationChange}
-              />
-            </FormControl>
-            <FormControl className={classes.formControl}>
-              <InputLabel>Max distance (km)</InputLabel>
-              <Input
-                placeholder="How far can you drive?"
-                inputProps={{
-                  "aria-label": "Max distance"
-                }}
-                onChange={this.handleRadiusChange}
-              />
-            </FormControl>
-          </div>
-          {isLoading ? null : (
-            <div className={classes.tableContainer}>
-              <PeaksTable peaks={this.props.peaks} />
+      <div>
+        <div className={classes.page} />
+        <div className={classes.root}>
+          <CssBaseline />
+          <main className={classes.content}>
+            <Typography
+              variant="h4"
+              gutterBottom
+              component="h2"
+              color="inherit"
+            >
+              Find a peak for today
+            </Typography>
+            <div className={classes.container}>
+              <FormControl className={classes.formControl}>
+                <TextField
+                  label="Location"
+                  placeholder="Where are you?"
+                  inputProps={{
+                    "aria-label": "Location"
+                  }}
+                  variant="outlined"
+                  onChange={this.handleLocationChange}
+                  autoFocus
+                />
+              </FormControl>
+              <FormControl className={classes.formControl}>
+                <TextField
+                  type="number"
+                  label="Max distance (km)"
+                  placeholder="How far can you drive?"
+                  inputProps={{
+                    "aria-label": "Max distance"
+                  }}
+                  variant="outlined"
+                  onChange={this.handleRadiusChange}
+                />
+              </FormControl>
             </div>
-          )}
-        </main>
+            {isLoading ? (
+              <div>
+                <CircularProgress
+                  className={classes.progress}
+                  color="inherit"
+                  size={300}
+                />{" "}
+              </div>
+            ) : isError ? (
+              <Typography
+                variant="h4"
+                component="h2"
+                color="inherit"
+                className={classes.errorMessage}
+              >
+                Ooops, no peaks here...
+              </Typography>
+            ) : (
+              <div className={classes.tableContainer}>
+                <PeaksTable
+                  peaks={peaks}
+                  location={location}
+                  radiusKm={radiusKm}
+                />
+              </div>
+            )}
+          </main>
+        </div>
       </div>
     );
   }
