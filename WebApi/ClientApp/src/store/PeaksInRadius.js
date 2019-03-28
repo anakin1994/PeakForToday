@@ -1,6 +1,3 @@
-const requestPeaksInRadiusType = "REQUEST_PEAKS_IN_RADIUS";
-const receivePeaksInRadiusType = "RECEIVE_PEAKS_IN_RADIUS";
-
 const requestPeaksNearType = "REQUEST_PEAKS_NEAR";
 const receivePeaksNearType = "RECEIVE_PEAKS_NEAR";
 
@@ -9,46 +6,18 @@ const responseErrorType = "RESPONSE_ERROR";
 const initialState = { peaks: [], isLoading: false };
 
 export const actionCreators = {
-  requestPeaksInRadius: (latitude, longitude, radiusKm) => async (
-    dispatch,
-    getState
-  ) => {
-    dispatch({
-      type: requestPeaksInRadiusType,
-      latitude,
-      longitude,
-      radiusKm
-    });
-
-    const url = `api/Peaks/PeaksInRadius?latitude=${latitude}&longitude=${longitude}&radiusKm=${radiusKm}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const peaksResponse = await response.json();
-      dispatch({
-        type: receivePeaksInRadiusType,
-        radiusKm,
-        peaksResponse
-      });
-    } else {
-      dispatch({
-        type: responseErrorType,
-        radiusKm
-      });
-    }
-  },
-
   requestPeaksNear: (location, radiusKm) => async (dispatch, getState) => {
     dispatch({ type: requestPeaksNearType, location, radiusKm });
 
     const url = `api/Peaks/PeaksNear?location=${location}&radiusKm=${radiusKm}`;
     const response = await fetch(url);
     if (response.ok) {
-      const peaksResponse = await response.json();
+      const peaks = await response.json();
       dispatch({
         type: receivePeaksNearType,
         location,
         radiusKm,
-        peaksResponse
+        peaks
       });
     } else {
       dispatch({
@@ -69,28 +38,6 @@ const peaksByDistance = (p1, p2) => {
 export const reducer = (state, action) => {
   state = state || initialState;
 
-  if (action.type === requestPeaksInRadiusType) {
-    return {
-      ...state,
-      latitude: action.latitude,
-      longitude: action.longitude,
-      radiusKm: action.radiusKm,
-      isLoading: true,
-      isError: false
-    };
-  }
-
-  if (action.type === receivePeaksInRadiusType) {
-    return {
-      ...state,
-      latitude: action.peaksResponse.latitude,
-      longitude: action.peaksResponse.longitude,
-      radiusKm: action.radiusKm,
-      peaks: action.peaksResponse.peaks.sort(peaksByDistance),
-      isLoading: false
-    };
-  }
-
   if (action.type === requestPeaksNearType) {
     return {
       ...state,
@@ -104,10 +51,8 @@ export const reducer = (state, action) => {
     return {
       ...state,
       location: action.location,
-      latitude: action.peaksResponse.latitude,
-      longitude: action.peaksResponse.longitude,
       radiusKm: action.radiusKm,
-      peaks: action.peaksResponse.peaks.sort(peaksByDistance),
+      peaks: action.peaks.sort(peaksByDistance),
       isLoading: false,
       isError: false
     };

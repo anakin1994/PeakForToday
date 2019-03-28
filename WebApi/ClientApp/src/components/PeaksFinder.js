@@ -69,23 +69,14 @@ class PeaksFinder extends Component {
     this.props.requestPeaksNear(location, radiusKm);
   }
 
-  requestPeaksInRadiusDebounced = AwesomeDebouncePromise(
-    this.props.requestPeaksInRadius,
-    500
-  );
-
   requestPeaksNearDebounced = AwesomeDebouncePromise(
     this.props.requestPeaksNear,
     500
   );
 
   handleRadiusChange = async event => {
-    const { latitude, longitude } = this.props;
-    await this.requestPeaksInRadiusDebounced(
-      latitude,
-      longitude,
-      event.target.value
-    );
+    const { location } = this.props;
+    await this.requestPeaksNearDebounced(location, event.target.value);
   };
 
   handleLocationChange = async event => {

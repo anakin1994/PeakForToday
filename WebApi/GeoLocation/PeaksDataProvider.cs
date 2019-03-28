@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 using WebApi.Model;
 
-namespace WebApi.Data
+namespace WebApi.GeoLocation
 {
     public static class PeaksDataProvider
     {

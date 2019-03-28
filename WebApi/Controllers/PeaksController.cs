@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using WebApi.Data;
 using WebApi.GeoLocation;
 using WebApi.Model;
 
@@ -22,26 +21,20 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<PeaksResponse> PeaksInRadius(double latitude, double longitude, int radiusKm)
-        {
-            return await GetPeaksInRadius(latitude, longitude, radiusKm);
-        }
-
-        [HttpGet("[action]")]
-        public async Task<PeaksResponse> PeaksNear(string location, int radiusKm)
+        public async Task<List<ResultPeak>> PeaksNear(string location, int radiusKm)
         {
             var coordinates = await GeoService.GetCoordsByLocation(location, _config["BingMapsApiKey"]);
             return await GetPeaksInRadius(coordinates[0], coordinates[1], radiusKm);
         }
 
-        private async Task<PeaksResponse> GetPeaksInRadius(double latitude, double longitude, int radiusKm)
+        private async Task<List<ResultPeak>> GetPeaksInRadius(double latitude, double longitude, int radiusKm)
         {
             var selectedPeaks = PeaksDataProvider.GetAllPeaks()
                 .Where(p => p.GetDistanceToKm(latitude, longitude) <= radiusKm);
             return await PrepareResults(selectedPeaks, latitude, longitude);
         }
 
-        private async Task<PeaksResponse> PrepareResults(IEnumerable<SourcePeak> source, double latitude, double longitude)
+        private async Task<List<ResultPeak>> PrepareResults(IEnumerable<SourcePeak> source, double latitude, double longitude)
         {
             var resultPeaks = new List<ResultPeak>();
             var sourcePeaks = source as SourcePeak[] ?? source.ToArray();
@@ -80,12 +73,7 @@ namespace WebApi.Controllers
                 });
             }
 
-            return new PeaksResponse
-            {
-                Peaks = resultPeaks,
-                Latitude = latitude,
-                Longitude = longitude
-            };
+            return resultPeaks;
         }
 
         private Task<List<double>>[] PrepareRoadTasks(SourcePeak[] sourcePeaks, double latitude, double longitude)
