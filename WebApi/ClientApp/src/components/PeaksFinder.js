@@ -18,6 +18,9 @@ const styles = theme => ({
     position: "fixed",
     width: "100%",
     height: "100%",
+    backgroundPosition: "center",
+    backgrounRepeat: "no-repeat",
+    backgroundSize: "cover",
     zIndex: -1
   },
   root: {
