@@ -85,16 +85,16 @@ const rows = [
     label: "Name"
   },
   {
+    id: "distance",
+    numeric: true,
+    disablePadding: false,
+    label: "Drive Distance (km)"
+  },
+  {
     id: "elevation",
     numeric: true,
     disablePadding: false,
     label: "Elevation (m)"
-  },
-  {
-    id: "distance",
-    numeric: true,
-    disablePadding: false,
-    label: "Distance (km)"
   },
   {
     id: "hikeDistance",
@@ -277,8 +277,8 @@ class EnhancedTable extends React.Component {
                     >
                       {n.name}
                     </TableCell>
-                    <TableCell align="right">{n.elevation}</TableCell>
                     <TableCell align="right">{n.distance}</TableCell>
+                    <TableCell align="right">{n.elevation}</TableCell>
                     <TableCell align="right">{n.hikeDistance}</TableCell>
                     <TableCell align="right">{n.elevationGain}</TableCell>
                     <TableCell align="right">{n.time}</TableCell>

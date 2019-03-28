@@ -69,7 +69,7 @@ namespace WebApi.Controllers
                     DistanceKm = sourcePeak.GetDistanceToKm(latitude, longitude),
                     HikeDistanceKm = hikeDistanceKm,
                     ElevationGain = elevationGain,
-                    EstimatedTimeHours = hikeDistanceKm / 4 + elevationGain / 600
+                    EstimatedTimeHours = hikeDistanceKm / 2 + elevationGain / 400
                 });
             }
 
