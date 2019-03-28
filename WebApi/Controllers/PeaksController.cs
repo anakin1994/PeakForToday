@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using WebApi.Data;
 using WebApi.GeoLocation;
 using WebApi.Model;
@@ -13,6 +14,13 @@ namespace WebApi.Controllers
     [ApiController]
     public class PeaksController : Controller
     {
+        private readonly IConfiguration _config;
+
+        public PeaksController(IConfiguration config)
+        {
+            _config = config;
+        }
+
         [HttpGet("[action]")]
         public async Task<PeaksResponse> PeaksInRadius(double latitude, double longitude, int radiusKm)
         {
@@ -22,7 +30,7 @@ namespace WebApi.Controllers
         [HttpGet("[action]")]
         public async Task<PeaksResponse> PeaksNear(string location, int radiusKm)
         {
-            var coordinates = await GeoService.GetCoordsByLocation(location);
+            var coordinates = await GeoService.GetCoordsByLocation(location, _config["BingMapsApiKey"]);
             return await GetPeaksInRadius(coordinates[0], coordinates[1], radiusKm);
         }
 
@@ -52,7 +60,7 @@ namespace WebApi.Controllers
                 var hikeDistanceKm = sourcePeak.NearestRoad != null
                     ? GeoService.CalcDistanceInKm(sourcePeak.NearestRoad[0], sourcePeak.NearestRoad[1], sourcePeak.Lat,
                           sourcePeak.Lng) * 2
-                    : (double?) null;
+                    : (double?)null;
                 var elevationGain = peakElevation - startElevation;
                 if (elevationGain < 0)
                     elevationGain = 0;
@@ -88,7 +96,8 @@ namespace WebApi.Controllers
                 if (sourcePeaks[i].NearestRoad == null)
                 {
                     roadTasks[i] =
-                        GeoService.GetNearestRoad(latitude, longitude, sourcePeaks[i].Lat, sourcePeaks[i].Lng);
+                        GeoService.GetNearestRoad(latitude, longitude, sourcePeaks[i].Lat, sourcePeaks[i].Lng,
+                            _config["BingMapsApiKey"]);
                 }
             }
 
@@ -104,7 +113,8 @@ namespace WebApi.Controllers
                 {
                     var nearestRoad = sourcePeaks[i].NearestRoad ?? (sourcePeaks[i].NearestRoad = await roadTasks[i]);
                     if (sourcePeaks[i].StartElevation == null)
-                        elevationTasks[i] = GeoService.GetPointElevation(nearestRoad[0], nearestRoad[1]);
+                        elevationTasks[i] =
+                            GeoService.GetPointElevation(nearestRoad[0], nearestRoad[1], _config["BingMapsApiKey"]);
                 }
                 catch (Exception e)
                 {

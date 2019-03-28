@@ -26,9 +26,12 @@ namespace WebApi.GeoLocation
         }
 
         public static async Task<List<double>> GetNearestRoad(double startLat, double startLng, double endLat,
-            double endLng)
+            double endLng, string bingMapsApiKey)
         {
-            var bingMapsApiKey = GetBingMapsApiKey();
+            if (string.IsNullOrEmpty(bingMapsApiKey))
+            {
+                bingMapsApiKey = GetBingMapsApiKey();
+            }
             var requestUrl =
                 $"http://dev.virtualearth.net/REST/V1/Routes/Driving?wp.0={startLat},{startLng}&wp.1={endLat},{endLng}&key={bingMapsApiKey}";
             var nearestRoadJson = await Client.GetStringAsync(requestUrl);
@@ -37,18 +40,24 @@ namespace WebApi.GeoLocation
             return nearestRoad.ResourceSets.First().Resources.First().RouteLegs.First().ActualEnd.Coordinates;
         }
 
-        public static async Task<List<double>> GetCoordsByLocation(string location)
+        public static async Task<List<double>> GetCoordsByLocation(string location, string bingMapsApiKey)
         {
-            var bingMapsApiKey = GeoService.GetBingMapsApiKey();
+            if (string.IsNullOrEmpty(bingMapsApiKey))
+            {
+                bingMapsApiKey = GetBingMapsApiKey();
+            }
             var requestUrl = $"http://dev.virtualearth.net/REST/v1/Locations/{location}?inclnb=1&key={bingMapsApiKey}";
             var bingLocationJson = await Client.GetStringAsync(requestUrl);
             var bingLocation = JsonConvert.DeserializeObject<BingLocationResponse>(bingLocationJson);
             return bingLocation.ResourceSets.First().Resources.First().Point.Coordinates;
         }
 
-        public static async Task<int> GetPointElevation(double latitude, double longitude)
+        public static async Task<int> GetPointElevation(double latitude, double longitude, string bingMapsApiKey)
         {
-            var bingMapsApiKey = GeoService.GetBingMapsApiKey();
+            if (string.IsNullOrEmpty(bingMapsApiKey))
+            {
+                bingMapsApiKey = GetBingMapsApiKey();
+            }
             var requestUrl =
                 $"http://dev.virtualearth.net/REST/v1/Elevation/List?points={latitude},{longitude}&key={bingMapsApiKey}";
             var bingLocationJson = await Client.GetStringAsync(requestUrl);
