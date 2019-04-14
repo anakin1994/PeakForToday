@@ -23,7 +23,8 @@ export const actionCreators = {
       dispatch({
         type: responseErrorType,
         location,
-        radiusKm
+        radiusKm,
+        tooManyPeaks: response.status === 429
       });
     }
   }
@@ -64,7 +65,8 @@ export const reducer = (state, action) => {
       location: action.location,
       radiusKm: action.radiusKm,
       isLoading: false,
-      isError: true
+      isError: true,
+      tooManyPeaks: action.tooManyPeaks
     };
   }
 

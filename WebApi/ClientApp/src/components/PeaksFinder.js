@@ -94,7 +94,8 @@ class PeaksFinder extends Component {
       peaks,
       location,
       radiusKm,
-      isError
+      isError,
+      tooManyPeaks
     } = this.props;
     return (
       <div>
@@ -151,7 +152,9 @@ class PeaksFinder extends Component {
                 color="inherit"
                 className={classes.errorMessage}
               >
-                Ooops, no peaks here...
+                {tooManyPeaks
+                  ? "Too many peaks in specified area. Please, try to narrow your search criteria."
+                  : "Ooops, no peaks here..."}
               </Typography>
             ) : (
               <div className={classes.tableContainer}>
