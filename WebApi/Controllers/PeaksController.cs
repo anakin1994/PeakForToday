@@ -41,7 +41,7 @@ namespace WebApi.Controllers
 
 		private int GetBingMapsRequestCount(IEnumerable<SourcePeak> peaks)
 		{
-			return peaks.Count(p => p.NearestRoad == null) + peaks.Count(p => p.StartElevation == null);
+			return 2 * peaks.Count(p => !p.Cached);
 		}
 
 		private async Task<List<ResultPeak>> PrepareResults(IEnumerable<SourcePeak> source, double latitude, double longitude)
@@ -58,6 +58,7 @@ namespace WebApi.Controllers
 				var startElevation = sourcePeak.StartElevation ?? (elevationTasks[i] != null
 										 ? sourcePeak.StartElevation = await elevationTasks[i]
 										 : null);
+				sourcePeak.Cached = true;
 
 				var peakElevation = 0.3048 * sourcePeak.Elevation;
 				var hikeDistanceKm = sourcePeak.NearestRoad != null
@@ -91,7 +92,7 @@ namespace WebApi.Controllers
 			var roadTasks = new Task<List<double>>[sourcePeaks.Length];
 			for (int i = 0; i < sourcePeaks.Length; i++)
 			{
-				if (sourcePeaks[i].NearestRoad == null)
+				if (!sourcePeaks[i].Cached)
 				{
 					roadTasks[i] =
 						GeoService.GetNearestRoad(latitude, longitude, sourcePeaks[i].Lat, sourcePeaks[i].Lng,
@@ -109,10 +110,12 @@ namespace WebApi.Controllers
 			{
 				try
 				{
-					var nearestRoad = sourcePeaks[i].NearestRoad ?? (sourcePeaks[i].NearestRoad = await roadTasks[i]);
-					if (sourcePeaks[i].StartElevation == null)
+					if (!sourcePeaks[i].Cached)
+					{
+						var nearestRoad = sourcePeaks[i].NearestRoad ?? (sourcePeaks[i].NearestRoad = await roadTasks[i]);
 						elevationTasks[i] =
 							GeoService.GetPointElevation(nearestRoad[0], nearestRoad[1], _config["BingMapsApiKey"]);
+					}
 				}
 				catch (Exception e)
 				{
