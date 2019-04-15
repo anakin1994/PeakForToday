@@ -209,8 +209,7 @@ let EnhancedTableToolbar = props => {
 
 EnhancedTableToolbar.propTypes = {
   classes: PropTypes.object.isRequired,
-  location: PropTypes.string.isRequired,
-  radiusKm: PropTypes.number.isRequired
+  location: PropTypes.string
 };
 
 EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
@@ -270,10 +269,11 @@ class EnhancedTable extends React.Component {
                       component="th"
                       scope="row"
                       component="a"
-                      target="_blank"
-                      href={`https://www.google.com/maps/@?api=1&map_action=map&center=${
-                        n.latitude
-                      },${n.longitude}&basemap=terrain`}
+                      href={`bingmaps:?cp=${n.latitude}~${
+                        n.longitude
+                      }&sty=3d&rad=1000&pit=68&collection=point.${n.latitude}_${
+                        n.longitude
+                      }_${n.name.replace(" ", "%20")}`}
                     >
                       {n.name}
                     </TableCell>
@@ -295,8 +295,7 @@ class EnhancedTable extends React.Component {
 
 EnhancedTable.propTypes = {
   peaks: PropTypes.arrayOf(PropTypes.object).isRequired,
-  location: PropTypes.string.isRequired,
-  radiusKm: PropTypes.number.isRequired,
+  location: PropTypes.string,
   classes: PropTypes.object.isRequired
 };
 
