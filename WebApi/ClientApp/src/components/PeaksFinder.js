@@ -60,6 +60,12 @@ const styles = theme => ({
   },
   errorMessage: {
     paddingTop: theme.spacing.unit * 2
+  },
+  copyright: {
+    color: theme.palette.common.white,
+    position: "absolute",
+    bottom: 5,
+    right: 10
   }
 });
 
@@ -99,7 +105,11 @@ class PeaksFinder extends Component {
     } = this.props;
     return (
       <div>
-        <div className={classes.page} />
+        <div className={classes.page}>
+          <Typography
+            className={classes.copyright}
+          >{`${"\u00A9"} Piotr Markowski 2019`}</Typography>
+        </div>
         <div className={classes.root}>
           <CssBaseline />
           <main className={classes.content}>
