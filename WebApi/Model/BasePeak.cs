@@ -1,7 +1,10 @@
-﻿namespace WebApi.Model
+﻿using Newtonsoft.Json;
+
+namespace WebApi.Model
 {
     public class BasePeak
     {
+        [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
 
         public string Name { get; set; }
